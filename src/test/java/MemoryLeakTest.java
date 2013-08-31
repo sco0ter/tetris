@@ -1,77 +1,49 @@
+import javafx.animation.Animation;
+import javafx.animation.TranslateTransition;
 import javafx.application.Application;
-import javafx.application.Platform;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.TextField;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeView;
+import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.util.Duration;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MemoryLeakTest extends Application {
 
     public static void main(String[] args) throws Exception {
         launch();
     }
-
+      private List<Node> nodes = new ArrayList<Node>();
     @Override
     public void start(Stage stage) throws Exception {
         VBox root = new VBox();
 
-        final TreeItem<String> rootItem = new TreeItem<String>();
-        final TreeView<String> treeView = new TreeView<String>(rootItem);
-        treeView.setShowRoot(false);
 
+        //Node node = new Label();
 
-
-        Button button = new Button("clear + add");
-        button.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-
-                for (int j = 0; j < 1; j++) {
-                    treeView.getRoot().getChildren().clear();
-                    for (int i = 0; i < 500; i++) {
-                        TreeItem<String> item = new TreeItem<String>();
-                        item.setValue(Integer.toString(i));
-                        treeView.getRoot().getChildren().add(item);
-                    }
+        for (int i = 0; i < 10000; i++) {
+            Node node = new Label();
+            Animation animation = new TranslateTransition(Duration.seconds(1), node);
+            animation.statusProperty().addListener(new ChangeListener<Animation.Status>() {
+                @Override
+                public void changed(ObservableValue<? extends Animation.Status> observableValue, Animation.Status status, Animation.Status status2) {
+                    //To change body of implemented methods use File | Settings | File Templates.
                 }
+            });
+            nodes.add(node);
+        }
 
-
-
-                System.out.println(treeView.getFocusModel().getFocusedIndex());
-
-                System.gc();
-                long totalMemory = Runtime.getRuntime().totalMemory() / 1024;
-                long freeMemory = Runtime.getRuntime().freeMemory() / 1024;
-                System.out.println("Heap use: " + (totalMemory - freeMemory) + " / " + totalMemory + " kB");
-            }
-        });
-        TextField textField = new TextField();
-
-        Button btnFocus = new Button("Fokus");
-        btnFocus.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                treeView.getSelectionModel().selectNext();
-                System.out.println(treeView.getFocusModel().getFocusedIndex());
-
-            }
-        });
-
-        root.getChildren().add(button);
-        root.getChildren().add(btnFocus);
-
-        root.getChildren().add(treeView);
-
-        Stage stage2 = new Stage();
-        //stage.setScene(new Scene(treeView));
+        System.gc();
+        System.out.println("Heap use: " + (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024 + " kB");
 
         Scene scene = new Scene(root);
         stage.setScene(scene);
         stage.show();
     }
+
 } 

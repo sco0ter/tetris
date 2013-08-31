@@ -1,58 +1,135 @@
 package tetris;
 
 import javafx.application.Application;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.geometry.HorizontalDirection;
 import javafx.scene.Group;
 import javafx.scene.Scene;
+import javafx.scene.control.CheckMenuItem;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.VBox;
 import javafx.scene.media.AudioClip;
-import javafx.scene.media.Media;
-import javafx.scene.media.MediaPlayer;
 import javafx.stage.Stage;
 import tetris.board.MainBox;
 
 public class Tetris extends Application {
 
-    private AudioClip clip = new AudioClip(getClass().getResource("/soundtrack.mp3").toExternalForm());
-    private MediaPlayer mediaPlayer1 = new MediaPlayer(new Media(getClass().getResource("/soundtrack.mp3").toExternalForm()));
+    public static void main(String[] args) {
+        launch(args);
+    }
 
     @Override
     public void start(Stage primaryStage) throws Exception {
 
-        Group group = new Group();
+        VBox group = new VBox();
 
-        final MainBox mainBox = new MainBox(this);
+        final GameController gameController = new GameController();
 
-        mediaPlayer1.setCycleCount(MediaPlayer.INDEFINITE);
-        mediaPlayer1.play();
-
-        //clip.setCycleCount(AudioClip.INDEFINITE);
-        //clip.play();
+        final MainBox mainBox = new MainBox(gameController);
 
         MenuBar bar = new MenuBar();
 
-        Menu menu = new Menu("test");
-        MenuItem item = new MenuItem("Item");
-        item.setDisable(true);
+        Menu menu = new Menu("Tetris");
+
+        MenuItem startNewGameMenuItem = new MenuItem("Start new Game");
+        startNewGameMenuItem.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                gameController.start();
+            }
+        });
+
+        CheckMenuItem pauseMenuItem = new CheckMenuItem("Pause");
+
+        pauseMenuItem.selectedProperty().bindBidirectional(gameController.pausedProperty());
+
         bar.getMenus().add(menu);
-        menu.getItems().add(item);
-//        item.setGraphic(new ImageView(new Image("")));
+        menu.getItems().addAll(startNewGameMenuItem);
+        menu.getItems().add(pauseMenuItem);
         bar.setUseSystemMenuBar(true);
         group.getChildren().add(bar);
-
 
         group.getChildren().add(mainBox);
         primaryStage.setTitle("Tetris");
         Scene scene = new Scene(group);
+        scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
+            @Override
+            public void handle(KeyEvent keyEvent) {
+                if (keyEvent.getCode() == KeyCode.P) {
+                    gameController.pausedProperty().set(!gameController.pausedProperty().get());
+                }
+            }
+        });
+
+
+        scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
+            public void handle(KeyEvent keyEvent) {
+
+                if (keyEvent.getCode() == KeyCode.LEFT && !gameController.pausedProperty().get()) {
+                    if (gameController.getBoard().move(HorizontalDirection.LEFT)) {
+                        Sound.MOVE_LEFT.getAudioClip().play();
+                    } else {
+                        Sound.INVALID_MOVE.getAudioClip().play();
+                    }
+                }
+
+                if (keyEvent.getCode() == KeyCode.RIGHT && !gameController.pausedProperty().get()) {
+                    if (gameController.getBoard().move(HorizontalDirection.RIGHT)) {
+                        Sound.MOVE_RIGHT.getAudioClip().play();
+                    } else {
+                        Sound.INVALID_MOVE.getAudioClip().play();
+                    }
+
+                }
+                if (keyEvent.getCode() == KeyCode.UP && !gameController.pausedProperty().get()) {
+                    if (gameController.getBoard().rotate(HorizontalDirection.LEFT)) {
+                        Sound.ROTATE_RIGHT.getAudioClip().play();
+                    } else {
+                        Sound.INVALID_MOVE.getAudioClip().play();
+                    }
+                }
+
+                if (keyEvent.getCode() == KeyCode.DOWN) {
+                    //if (!movingDown) {
+                        if (!gameController.pausedProperty().get()) {
+                            gameController.getBoard().moveDownFast();
+                        }
+                        //movingDown = true;
+                    //}
+                    /*if (getTetromino().rotate(HorizontalDirection.RIGHT)) {
+                        Sound.ROTATE_RIGHT.getAudioClip().play();
+                    } else {
+                        Sound.INVALID_MOVE.getAudioClip().play();
+                    } */
+                }
+                if (keyEvent.getCode() == KeyCode.SPACE && !gameController.pausedProperty().get()) {
+                    gameController.getBoard().dropDown();
+                }
+            }
+        });
+
+        scene.setOnKeyReleased(new EventHandler<KeyEvent>() {
+            @Override
+            public void handle(KeyEvent keyEvent) {
+                if (keyEvent.getCode() == KeyCode.DOWN) {
+                    //movingDown = false;
+                    gameController.getBoard().moveDown();
+                }
+            }
+        });
+
+
         scene.getStylesheets().add("styles.css");
         primaryStage.setScene(scene);
         primaryStage.show();
-    }
-
-    public static void main(String[] args) {
-        launch(args);
     }
 }

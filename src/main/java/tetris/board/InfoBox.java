@@ -5,6 +5,7 @@ import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
+import tetris.GameController;
 import tetris.Tetris;
 
 
@@ -12,10 +13,13 @@ import tetris.Tetris;
  * @author Christian Schudt
  */
 public class InfoBox extends VBox {
-    public InfoBox(final Tetris tetris, final Board board) {
+    public InfoBox(final GameController gameController) {
 
         setPadding(new Insets(20, 20, 20, 20));
         setSpacing(10);
+
+        setId("infoBox");
+
         Label label = new Label("Sound");
         label.getStyleClass().add("header");
 
@@ -24,7 +28,7 @@ public class InfoBox extends VBox {
 
         CheckBox checkBox = new CheckBox("Stumm schalten");
         checkBox.selectedProperty().set(true);
-        //tetris.getMediaPlayer().muteProperty().bind(checkBox.selectedProperty());
+        gameController.getSoundManager().getMediaPlayer().muteProperty().bind(checkBox.selectedProperty());
 
         Label lblVolume = new Label("Hintergrundmusik:");
 
@@ -35,21 +39,29 @@ public class InfoBox extends VBox {
         sliderVolume.setMax(1);
         sliderVolume.setValue(0.2);
         sliderVolume.setTooltip(new Tooltip("Lautstärke"));
-        //tetris.getMediaPlayer().volumeProperty().bind(sliderVolume.valueProperty());
+        gameController.getSoundManager().getMediaPlayer().volumeProperty().bind(sliderVolume.valueProperty());
 
         Slider sliderBalance = new Slider();
         sliderBalance.setMin(-1);
         sliderBalance.setMax(1);
         sliderBalance.setValue(0);
         sliderBalance.setTooltip(new Tooltip("Balance"));
-        //tetris.getMediaPlayer().balanceProperty().bind(sliderBalance.valueProperty());
+        gameController.getSoundManager().getMediaPlayer().balanceProperty().bind(sliderBalance.valueProperty());
+
+        Button btnStart = new Button("Start");
+        btnStart.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                gameController.start();
+            }
+        });
 
 
         Button btnPause = new Button("Pause");
         btnPause.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
-                board.pause();
+                gameController.pausedProperty().set(true);
             }
         });
 
@@ -57,11 +69,11 @@ public class InfoBox extends VBox {
         btnResume.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
-                board.resume();
+                gameController.play();
             }
         });
 
-        Preview preview = new Preview(board);
+        Preview preview = new Preview(gameController);
 
 
         getChildren().add(checkBox);
@@ -69,7 +81,7 @@ public class InfoBox extends VBox {
         getChildren().add(sliderBalance);
 
         getChildren().add(preview);
-
+        getChildren().add(btnStart);
         getChildren().add(btnPause);
         getChildren().addAll(btnResume);
 

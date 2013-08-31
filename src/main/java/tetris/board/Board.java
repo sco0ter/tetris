@@ -25,7 +25,9 @@ import tetris.Sound;
 import tetris.tetromino.Tetromino;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Christian Schudt
@@ -83,7 +85,7 @@ public class Board extends StackPane {
      */
     private final TranslateTransition translateTransition;
 
-    private final List<Animation> runningAnimations = new ArrayList<Animation>();
+    private final Set<Animation> runningAnimations = new HashSet<Animation>();
 
     /**
      * The two-dimensional array, which defines the board.
@@ -105,8 +107,6 @@ public class Board extends StackPane {
 
     private Tetromino currentTetromino;
 
-    private boolean paused;
-
     /**
      *
      */
@@ -120,64 +120,10 @@ public class Board extends StackPane {
             }
         });
 
-        setOnKeyPressed(new EventHandler<KeyEvent>() {
-            public void handle(KeyEvent keyEvent) {
 
-                if (keyEvent.getCode() == KeyCode.LEFT && !paused) {
-                    if (move(HorizontalDirection.LEFT)) {
-                        Sound.MOVE_LEFT.getAudioClip().play();
-                    } else {
-                        Sound.INVALID_MOVE.getAudioClip().play();
-                    }
-                }
+        //setStyle("-fx-background-color:linear-gradient(to top, #000000 0%, #333333 100%)");
 
-                if (keyEvent.getCode() == KeyCode.RIGHT && !paused) {
-                    if (move(HorizontalDirection.RIGHT)) {
-                        Sound.MOVE_RIGHT.getAudioClip().play();
-                    } else {
-                        Sound.INVALID_MOVE.getAudioClip().play();
-                    }
-
-                }
-                if (keyEvent.getCode() == KeyCode.UP && !paused) {
-                    if (rotate(HorizontalDirection.LEFT)) {
-                        Sound.ROTATE_RIGHT.getAudioClip().play();
-                    } else {
-                        Sound.INVALID_MOVE.getAudioClip().play();
-                    }
-                }
-
-                if (keyEvent.getCode() == KeyCode.DOWN) {
-                    if (!movingDown) {
-                        if (!paused) {
-                            moveDownFast();
-                        }
-                        movingDown = true;
-                    }
-                    /*if (getTetromino().rotate(HorizontalDirection.RIGHT)) {
-                        Sound.ROTATE_RIGHT.getAudioClip().play();
-                    } else {
-                        Sound.INVALID_MOVE.getAudioClip().play();
-                    } */
-                }
-                if (keyEvent.getCode() == KeyCode.SPACE && !paused) {
-                    dropDown();
-                }
-            }
-        });
-
-        setOnKeyReleased(new EventHandler<KeyEvent>() {
-            @Override
-            public void handle(KeyEvent keyEvent) {
-                if (keyEvent.getCode() == KeyCode.DOWN) {
-                    movingDown = false;
-                    moveDown();
-                }
-            }
-        });
-
-
-        setStyle("-fx-background-color:linear-gradient(to top, #000000 0%, #333333 100%)");
+        setId("board");
         setMinWidth(SQUARE * BLOCKS_PER_ROW);
         setMinHeight(SQUARE * BLOCKS_PER_COLUMN);
         setClip(new Rectangle(SQUARE * BLOCKS_PER_ROW, SQUARE * BLOCKS_PER_COLUMN));
@@ -201,7 +147,7 @@ public class Board extends StackPane {
                 //lighting.setContentInput(new InnerShadow(23, Color.GRAY));
 
                 rectangle.setEffect(lighting);
-                gridPane.getChildren().add(rectangle);
+                //gridPane.getChildren().add(rectangle);
 
             }
         }
@@ -235,7 +181,7 @@ public class Board extends StackPane {
                 moveDown();
             }
         });
-        registerAnimation(sequentialTransition);
+        registerPausableAnimation(sequentialTransition);
 
         moveDownFastTransition = new TranslateTransition(Duration.seconds(0.1));
         moveDownFastTransition.setInterpolator(Interpolator.EASE_OUT);
@@ -245,23 +191,27 @@ public class Board extends StackPane {
                 moveDownFast();
             }
         });
-        registerAnimation(moveDownFastTransition);
+        registerPausableAnimation(moveDownFastTransition);
 
         translateTransition = new TranslateTransition(Duration.seconds(0.1));
+        registerPausableAnimation(translateTransition);
 
         rotateTransition = new RotateTransition(Duration.seconds(0.1));
-        spawnTetromino();
-
-
     }
 
-    private void registerAnimation(final Animation animation) {
+    public void start() {
+        clear();
+        requestFocus();
+        spawnTetromino();
+    }
+
+    private void registerPausableAnimation(final Animation animation) {
         animation.statusProperty().addListener(new ChangeListener<Animation.Status>() {
             @Override
             public void changed(ObservableValue<? extends Animation.Status> observableValue, Animation.Status status, Animation.Status status2) {
                 if (status2 == Animation.Status.STOPPED) {
                     runningAnimations.remove(animation);
-                } else if (!runningAnimations.contains(animation)) {
+                } else {
                     runningAnimations.add(animation);
                 }
             }
@@ -282,21 +232,17 @@ public class Board extends StackPane {
     }
 
     public void pause() {
-        paused = true;
         for (Animation animation : runningAnimations) {
             animation.pause();
         }
+
     }
 
-    public void resume() {
-        paused = false;
-        System.out.println(runningAnimations.size());
-        if (runningAnimations.size() == 2) {
-            int i = 0;
-        }
+    public void play() {
         for (Animation animation : runningAnimations) {
             animation.play();
         }
+        requestFocus();
     }
 
     public ObservableList<Tetromino> getQueue() {
@@ -372,10 +318,12 @@ public class Board extends StackPane {
                 if (tetrominoMatrix[i][j] == 1) {
                     Rectangle rectangle = new Rectangle(SQUARE, SQUARE);
                     rectangle.setFill(currentTetromino.getFill());
-
-                    rectangle.setEffect(new Lighting(new Light.Distant(225, 50, Color.WHITE)));
+                    ((Light.Distant) currentTetromino.getLighting().getLight()).azimuthProperty().set(245);
+                    rectangle.setEffect(currentTetromino.getLighting());
                     rectangle.setTranslateX(x * SQUARE);
                     rectangle.setTranslateY((y - HIDDEN_ROWS) * SQUARE);
+                    rectangle.setArcHeight(7);
+                    rectangle.setArcWidth(7);
                     matrix[y][x] = rectangle;
                     getChildren().add(rectangle);
 
@@ -415,6 +363,8 @@ public class Board extends StackPane {
         final int f = fall;
         fallRowsTransition.setOnFinished(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent actionEvent) {
+                Sound.DROPPED.getAudioClip().play();
+                if (true)return;
                 switch (f) {
                     case 1:
                         Sound.SINGLE.getAudioClip().play();
@@ -432,7 +382,9 @@ public class Board extends StackPane {
 
             }
         });
-
+        if (deleteRowTransition.getChildren().size() > 0) {
+            Sound.VANISH.getAudioClip().play();
+        }
         final SequentialTransition sequentialTransition = new SequentialTransition();
         sequentialTransition.getChildren().add(deleteRowTransition);
         sequentialTransition.getChildren().add(fallRowsTransition);
@@ -442,7 +394,7 @@ public class Board extends StackPane {
                 spawnTetromino();
             }
         });
-        registerAnimation(sequentialTransition);
+        registerPausableAnimation(sequentialTransition);
         sequentialTransition.playFromStart();
 
     }
@@ -485,7 +437,7 @@ public class Board extends StackPane {
                     final Rectangle rectangle = matrix[i][j];
 
                     if (i == rowIndex && rectangle != null) {
-                        FadeTransition fadeTransition = new FadeTransition(Duration.seconds(0.3), rectangle);
+                        FadeTransition fadeTransition = new FadeTransition(Duration.seconds(0.27), rectangle);
                         fadeTransition.setToValue(0);
                         fadeTransition.setCycleCount(3);
                         fadeTransition.setAutoReverse(true);
@@ -516,6 +468,11 @@ public class Board extends StackPane {
      * The game is over. Clears the board, and restarts the game.
      */
     private void gameOver() {
+        clear();
+        spawnTetromino();
+    }
+
+    private void clear() {
         for (int i = 0; i < BLOCKS_PER_COLUMN + HIDDEN_ROWS; i++) {
             for (int j = 0; j < BLOCKS_PER_ROW; j++) {
                 if (matrix[i][j] != null) {
@@ -524,9 +481,8 @@ public class Board extends StackPane {
                 }
             }
         }
-        System.out.println("Game over");
         getChildren().remove(currentTetromino);
-        spawnTetromino();
+        currentTetromino = null;
     }
 
     /**
@@ -549,7 +505,7 @@ public class Board extends StackPane {
                 tetrominoDropped();
             }
         });
-        registerAnimation(dropDownTransition);
+        registerPausableAnimation(dropDownTransition);
         dropDownTransition.playFromStart();
     }
 
@@ -583,12 +539,12 @@ public class Board extends StackPane {
 
             rotateTransition.setToAngle(rotateTransition.getToAngle() + f * 90);
 
-            KeyValue kv = new KeyValue(currentTetromino.getLight().azimuthProperty(), 360 - 225 + 90 - rotateTransition.getToAngle());
+            KeyValue kv = new KeyValue(((Light.Distant) currentTetromino.getLighting().getLight()).azimuthProperty(), 360 - 225 + 90 - rotateTransition.getToAngle());
             KeyFrame keyFrame = new KeyFrame(rotateTransition.getDuration(), kv);
             Timeline lightingAnimation = new Timeline(keyFrame);
 
             final ParallelTransition parallelTransition = new ParallelTransition(rotateTransition, lightingAnimation);
-            registerAnimation(parallelTransition);
+            registerPausableAnimation(parallelTransition);
             parallelTransition.playFromStart();
             return true;
         }
@@ -661,6 +617,7 @@ public class Board extends StackPane {
 
             // If it is able to move to the next y position, do it!
             if (!intersectsWithBoard(currentTetromino.getMatrix(), x, y + 1) && !isDropping) {
+                moveDownTransition.setFromY(moveDownTransition.getNode().getTranslateY());
                 moveDownTransition.setToY((y + 1 - Board.HIDDEN_ROWS) * Board.SQUARE);
                 sequentialTransition.playFromStart();
             } else {
