@@ -5,6 +5,7 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import tetris.board.Board;
+import tetris.board.PointOverlay;
 
 /**
  * @author Christian Schudt
@@ -17,10 +18,12 @@ public class GameController {
 
     private BooleanProperty paused = new SimpleBooleanProperty();
 
+    private PointOverlay pointOverlay;
+
     public GameController() {
         this.soundManager = new SoundManager();
-        this.board = new Board();
-
+        this.board = new Board(this);
+        pointOverlay = new PointOverlay();
         paused.addListener(new ChangeListener<Boolean>() {
             @Override
             public void changed(ObservableValue<? extends Boolean> observableValue, Boolean aBoolean, Boolean aBoolean2) {
@@ -60,5 +63,9 @@ public class GameController {
         paused.set(false);
         soundManager.play();
         board.play();
+    }
+
+    public PointOverlay getPointOverlay() {
+        return pointOverlay;
     }
 }

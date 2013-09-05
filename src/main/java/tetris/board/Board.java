@@ -21,6 +21,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
+import tetris.GameController;
 import tetris.Sound;
 import tetris.tetromino.Tetromino;
 
@@ -92,11 +93,6 @@ public class Board extends StackPane {
      */
     private Rectangle[][] matrix = new Rectangle[BLOCKS_PER_COLUMN + HIDDEN_ROWS][BLOCKS_PER_ROW];
 
-    /**
-     * Stores if the arrow down key was pressed, to prevent repeated events.
-     */
-    private boolean movingDown = false;
-
     private ObservableList<Tetromino> tetrominos = FXCollections.observableArrayList();
 
     private boolean moving = false;
@@ -107,10 +103,12 @@ public class Board extends StackPane {
 
     private Tetromino currentTetromino;
 
+    private GameController gameController;
+
     /**
      *
      */
-    public Board() {
+    public Board(GameController gameController) {
         Group gridPane = new Group();
         setFocusTraversable(true);
 
@@ -197,6 +195,8 @@ public class Board extends StackPane {
         registerPausableAnimation(translateTransition);
 
         rotateTransition = new RotateTransition(Duration.seconds(0.1));
+        this.gameController = gameController;
+
     }
 
     public void start() {
@@ -331,9 +331,6 @@ public class Board extends StackPane {
             }
         }
 
-        getChildren().remove(currentTetromino);
-
-
         ParallelTransition fallRowsTransition = new ParallelTransition();
         ParallelTransition deleteRowTransition = new ParallelTransition();
         int fall = 0;
@@ -364,7 +361,7 @@ public class Board extends StackPane {
         fallRowsTransition.setOnFinished(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent actionEvent) {
                 Sound.DROPPED.getAudioClip().play();
-                if (true)return;
+                if (true) return;
                 switch (f) {
                     case 1:
                         Sound.SINGLE.getAudioClip().play();
@@ -382,8 +379,27 @@ public class Board extends StackPane {
 
             }
         });
-        if (deleteRowTransition.getChildren().size() > 0) {
-            Sound.VANISH.getAudioClip().play();
+
+
+        if (f > 0) {
+            if (f < 4) {
+                Sound.VANISH.getAudioClip().play();
+            } else {
+                Sound.TETRIS.getAudioClip().play();
+            }
+            switch (f) {
+                case 1:
+                    gameController.getPointOverlay().addPoints(40);
+                    break;
+                case 2:
+                    gameController.getPointOverlay().addPoints(100);
+                    break;
+                case 3:
+                    gameController.getPointOverlay().addPoints(300);
+                    break;
+                case 4:
+                    gameController.getPointOverlay().addPoints(1200);
+            }
         }
         final SequentialTransition sequentialTransition = new SequentialTransition();
         sequentialTransition.getChildren().add(deleteRowTransition);
@@ -394,9 +410,10 @@ public class Board extends StackPane {
                 spawnTetromino();
             }
         });
+        getChildren().remove(currentTetromino);
+        currentTetromino = null;
         registerPausableAnimation(sequentialTransition);
         sequentialTransition.playFromStart();
-
     }
 
     /**
@@ -456,15 +473,6 @@ public class Board extends StackPane {
     }
 
     /**
-     * Gets the current tetromino.
-     *
-     * @return The tetromino.
-     */
-    public Tetromino getTetromino() {
-        return currentTetromino;
-    }
-
-    /**
      * The game is over. Clears the board, and restarts the game.
      */
     private void gameOver() {
@@ -475,12 +483,13 @@ public class Board extends StackPane {
     private void clear() {
         for (int i = 0; i < BLOCKS_PER_COLUMN + HIDDEN_ROWS; i++) {
             for (int j = 0; j < BLOCKS_PER_ROW; j++) {
-                if (matrix[i][j] != null) {
-                    getChildren().remove(matrix[i][j]);
-                    matrix[i][j] = null;
-                }
+                //if (matrix[i][j] != null) {
+                //    getChildren().remove(matrix[i][j]);
+                matrix[i][j] = null;
+                //}
             }
         }
+        getChildren().clear();
         getChildren().remove(currentTetromino);
         currentTetromino = null;
     }
@@ -489,12 +498,17 @@ public class Board extends StackPane {
      * Drops the tetromino down to the next possible position.
      */
     public void dropDown() {
-
+        if (currentTetromino == null) {
+            return;
+        }
 
         sequentialTransition.stop();
         moveDownFastTransition.stop();
 
-        while (!intersectsWithBoard(currentTetromino.getMatrix(), x, ++y)) ;
+        do {
+            y++;
+        }
+        while (!intersectsWithBoard(currentTetromino.getMatrix(), x, y));
         y--;
         isDropping = true;
         final TranslateTransition dropDownTransition = new TranslateTransition(Duration.seconds(0.1), currentTetromino);
@@ -507,6 +521,7 @@ public class Board extends StackPane {
         });
         registerPausableAnimation(dropDownTransition);
         dropDownTransition.playFromStart();
+
     }
 
     /**
@@ -516,6 +531,9 @@ public class Board extends StackPane {
      * @return True, if the rotation was successful, otherwise false.
      */
     public boolean rotate(final HorizontalDirection direction) {
+        if (currentTetromino == null) {
+            return false;
+        }
 
         int[][] matrix = currentTetromino.getMatrix();
 
@@ -593,6 +611,9 @@ public class Board extends StackPane {
      * @return True, if the movement was successful. False, if the movement was blocked by the board.
      */
     public boolean move(final HorizontalDirection direction) {
+        if (currentTetromino == null) {
+            return false;
+        }
         int i = direction == HorizontalDirection.RIGHT ? 1 : -1;
         x += i;
         // If it is not moving, only check the current y position.
@@ -611,7 +632,7 @@ public class Board extends StackPane {
      * Moves the tetromino one field down.
      */
     public void moveDown() {
-        if (!isDropping) {
+        if (!isDropping && currentTetromino != null) {
             moveDownFastTransition.stop();
             moving = true;
 

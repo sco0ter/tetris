@@ -1,12 +1,14 @@
 package tetris.board;
 
+import javafx.beans.binding.Bindings;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import tetris.GameController;
-import tetris.Tetris;
+
+import java.util.concurrent.Callable;
 
 
 /**
@@ -80,10 +82,20 @@ public class InfoBox extends VBox {
         getChildren().add(sliderVolume);
         getChildren().add(sliderBalance);
 
+        Label lblPoints = new Label();
+        lblPoints.setStyle("-fx-text-fill: #ffffff");
+        lblPoints.textProperty().bind(Bindings.createStringBinding(new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+                return String.valueOf(gameController.getPointOverlay().pointsProperty().get());
+            }
+        }, gameController.getPointOverlay().pointsProperty()));
+
         getChildren().add(preview);
         getChildren().add(btnStart);
         getChildren().add(btnPause);
         getChildren().addAll(btnResume);
+        getChildren().addAll(lblPoints);
 
     }
 }

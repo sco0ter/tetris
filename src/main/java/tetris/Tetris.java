@@ -26,6 +26,10 @@ public class Tetris extends Application {
     public static void main(String[] args) {
         launch(args);
     }
+    /**
+     * Stores if the arrow down key was pressed, to prevent repeated events.
+     */
+    private boolean movingDown = false;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -99,17 +103,12 @@ public class Tetris extends Application {
                 }
 
                 if (keyEvent.getCode() == KeyCode.DOWN) {
-                    //if (!movingDown) {
+                    if (!movingDown) {
                         if (!gameController.pausedProperty().get()) {
                             gameController.getBoard().moveDownFast();
                         }
-                        //movingDown = true;
-                    //}
-                    /*if (getTetromino().rotate(HorizontalDirection.RIGHT)) {
-                        Sound.ROTATE_RIGHT.getAudioClip().play();
-                    } else {
-                        Sound.INVALID_MOVE.getAudioClip().play();
-                    } */
+                        movingDown = true;
+                    }
                 }
                 if (keyEvent.getCode() == KeyCode.SPACE && !gameController.pausedProperty().get()) {
                     gameController.getBoard().dropDown();
@@ -121,7 +120,7 @@ public class Tetris extends Application {
             @Override
             public void handle(KeyEvent keyEvent) {
                 if (keyEvent.getCode() == KeyCode.DOWN) {
-                    //movingDown = false;
+                    movingDown = false;
                     gameController.getBoard().moveDown();
                 }
             }

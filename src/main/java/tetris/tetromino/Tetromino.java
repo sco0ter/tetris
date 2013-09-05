@@ -27,13 +27,13 @@ public class Tetromino extends Group {
             {0, 0, 0, 0},
             {0, 0, 0, 0}
     },
-//            new double[]{
-//            0.0, 0.0,
-//            0.0, 1.0,
-//            4.0, 1.0,
-//            4.0, 4.0,
-//            4.0, 2.0,
-//            0.0, 2.0},
+            //            new double[]{
+            //            0.0, 0.0,
+            //            0.0, 1.0,
+            //            4.0, 1.0,
+            //            4.0, 4.0,
+            //            4.0, 2.0,
+            //            0.0, 2.0},
             Color.CYAN);
 
     private static final TetrominoDefinition J = new TetrominoDefinition(new int[][]{
@@ -41,39 +41,39 @@ public class Tetromino extends Group {
             {1, 1, 1},
             {0, 0, 0}
     },
-//            new double[]{
-//            0.0, 0.0,
-//            1.0, 0.0,
-//            1.0, 1.0,
-//            3.0, 1.0,
-//            3.0, 3.0,
-//            3.0, 2.0,
-//            0.0, 2.0},
+            //            new double[]{
+            //            0.0, 0.0,
+            //            1.0, 0.0,
+            //            1.0, 1.0,
+            //            3.0, 1.0,
+            //            3.0, 3.0,
+            //            3.0, 2.0,
+            //            0.0, 2.0},
             Color.BLUE);
 
     private static final TetrominoDefinition L = new TetrominoDefinition(new int[][]{
             {0, 0, 1},
             {1, 1, 1},
             {0, 0, 0}},
-//            new double[]{
-//            3.0, 3.0,
-//            3.0, 0.0,
-//            2.0, 0.0,
-//            2.0, 1.0,
-//            0.0, 1.0,
-//            0.0, 2.0,
-//            3.0, 2.0},
+            //            new double[]{
+            //            3.0, 3.0,
+            //            3.0, 0.0,
+            //            2.0, 0.0,
+            //            2.0, 1.0,
+            //            0.0, 1.0,
+            //            0.0, 2.0,
+            //            3.0, 2.0},
             Color.ORANGE);
 
     private static final TetrominoDefinition O = new TetrominoDefinition(new int[][]{
             {1, 1},
             {1, 1}
     },
-//            new double[]{
-//            0.0, 0.0,
-//            0.0, 2.0,
-//            2.0, 2.0,
-//            2.0, 0.0},
+            //            new double[]{
+            //            0.0, 0.0,
+            //            0.0, 2.0,
+            //            2.0, 2.0,
+            //            2.0, 0.0},
             Color.YELLOW);
 
     private static final TetrominoDefinition S = new TetrominoDefinition(new int[][]{
@@ -81,16 +81,16 @@ public class Tetromino extends Group {
             {1, 1, 0},
             {0, 0, 0}
     },
-//            new double[]{
-//            0.0, 1.0,
-//            1.0, 1.0,
-//            1.0, 0.0,
-//            3.0, 0.0,
-//            3.0, 3.0,
-//            3.0, 1.0,
-//            2.0, 1.0,
-//            2.0, 2.0,
-//            0.0, 2.0},
+            //            new double[]{
+            //            0.0, 1.0,
+            //            1.0, 1.0,
+            //            1.0, 0.0,
+            //            3.0, 0.0,
+            //            3.0, 3.0,
+            //            3.0, 1.0,
+            //            2.0, 1.0,
+            //            2.0, 2.0,
+            //            0.0, 2.0},
             Color.GREENYELLOW);
 
     private static final TetrominoDefinition T = new TetrominoDefinition(new int[][]{
@@ -98,16 +98,16 @@ public class Tetromino extends Group {
             {1, 1, 1},
             {0, 0, 0}
     },
-//            new double[]{
-//            0.0, 1.0,
-//            1.0, 1.0,
-//            1.0, 0.0,
-//            2.0, 0.0,
-//            2.0, 1.0,
-//            3.0, 1.0,
-//            3.0, 3.0,
-//            3.0, 2.0,
-//            0.0, 2.0},
+            //            new double[]{
+            //            0.0, 1.0,
+            //            1.0, 1.0,
+            //            1.0, 0.0,
+            //            2.0, 0.0,
+            //            2.0, 1.0,
+            //            3.0, 1.0,
+            //            3.0, 3.0,
+            //            3.0, 2.0,
+            //            0.0, 2.0},
             Color.PURPLE);
 
     private static final TetrominoDefinition Z = new TetrominoDefinition(new int[][]{
@@ -115,16 +115,16 @@ public class Tetromino extends Group {
             {0, 1, 1},
             {0, 0, 0}
     },
-//            new double[]{
-//            0.0, 1.0,
-//            1.0, 1.0,
-//            1.0, 0.0,
-//            3.0, 0.0,
-//            3.0, 3.0,
-//            3.0, 1.0,
-//            2.0, 1.0,
-//            2.0, 2.0,
-//            0.0, 2.0},
+            //            new double[]{
+            //            0.0, 1.0,
+            //            1.0, 1.0,
+            //            1.0, 0.0,
+            //            3.0, 0.0,
+            //            3.0, 3.0,
+            //            3.0, 1.0,
+            //            2.0, 1.0,
+            //            2.0, 2.0,
+            //            0.0, 2.0},
             Color.ORANGERED);
 
     private static final TetrominoDefinition[] TETROMINO_DEFINITIONS = new TetrominoDefinition[]{I, J, L, O, S, T, Z};
@@ -186,6 +186,10 @@ public class Tetromino extends Group {
     public static Tetromino random() {
         TetrominoDefinition tetrominoDefinition = TETROMINO_DEFINITIONS[RANDOM.nextInt(7)];
 
+        return new Tetromino(tetrominoDefinition);
+    }
+
+    public Tetromino clone() {
         return new Tetromino(tetrominoDefinition);
     }
 
