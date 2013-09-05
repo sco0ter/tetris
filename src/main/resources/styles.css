@@ -1,8 +1,10 @@
 .root
 {
-
 }
-
+  .label, .check-box
+   {
+   -fx-text-fill: white;
+   }
 .-button {
     -fx-background-color:
         linear-gradient(#686868 0%, #232723 25%, #373837 75%, #757575 100%),
@@ -53,7 +55,7 @@
 .root
 {
     -fx-font-family: Chalkboard;
-     -fx-background-image: url('desktop-simple-texture-background-desktops-black.jpg');
+     -fx-background-image: url('dark-grey-background-texture.jpg');
 }
 
 #infoBox
@@ -62,7 +64,6 @@
 }
 #board
 {
-    --fx-background-image: url('dark-grey-background-texture.jpg');
 
 }
 

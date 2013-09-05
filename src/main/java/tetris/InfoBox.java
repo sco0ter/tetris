@@ -1,4 +1,4 @@
-package tetris.board;
+package tetris;
 
 import javafx.beans.binding.Bindings;
 import javafx.event.ActionEvent;
@@ -6,7 +6,6 @@ import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
-import tetris.GameController;
 
 import java.util.concurrent.Callable;
 
@@ -14,7 +13,7 @@ import java.util.concurrent.Callable;
 /**
  * @author Christian Schudt
  */
-public class InfoBox extends VBox {
+final class InfoBox extends VBox {
     public InfoBox(final GameController gameController) {
 
         setPadding(new Insets(20, 20, 20, 20));
@@ -87,9 +86,9 @@ public class InfoBox extends VBox {
         lblPoints.textProperty().bind(Bindings.createStringBinding(new Callable<String>() {
             @Override
             public String call() throws Exception {
-                return String.valueOf(gameController.getPointOverlay().pointsProperty().get());
+                return String.valueOf(gameController.getPointManager().pointsProperty().get());
             }
-        }, gameController.getPointOverlay().pointsProperty()));
+        }, gameController.getPointManager().pointsProperty()));
 
         getChildren().add(preview);
         getChildren().add(btnStart);

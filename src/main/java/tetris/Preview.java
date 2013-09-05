@@ -1,4 +1,4 @@
-package tetris.board;
+package tetris;
 
 import javafx.animation.FadeTransition;
 import javafx.animation.PauseTransition;
@@ -15,8 +15,6 @@ import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.util.Duration;
-import tetris.GameController;
-import tetris.tetromino.Tetromino;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,7 +22,7 @@ import java.util.Map;
 /**
  * @author Christian Schudt
  */
-public class Preview extends StackPane {
+final class Preview extends StackPane {
 
     private Map<Tetromino, Node> cloneToNode = new HashMap<Tetromino, Node>();
 
@@ -33,7 +31,7 @@ public class Preview extends StackPane {
 
     public Preview(GameController gameController) {
 
-        final ObservableList<Tetromino> tetrominos = gameController.getBoard().getQueue();
+        final ObservableList<Tetromino> tetrominos = gameController.getBoard().getWaitingTetrominos();
 
         tetrominos.addListener(new ListChangeListener<Tetromino>() {
             @Override

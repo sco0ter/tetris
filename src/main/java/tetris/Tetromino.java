@@ -1,23 +1,19 @@
-package tetris.tetromino;
+package tetris;
 
 import javafx.scene.CacheHint;
 import javafx.scene.Group;
 import javafx.scene.effect.Light;
 import javafx.scene.effect.Lighting;
-import javafx.scene.layout.StackPane;
-import javafx.scene.paint.*;
-import javafx.scene.shape.Path;
-import javafx.scene.shape.Polygon;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
-import tetris.board.Board;
 
 import java.util.Random;
 
 /**
  * @author Christian Schudt
  */
-@SuppressWarnings("unused")
-public class Tetromino extends Group {
+final class Tetromino extends Group {
 
     private static final Random RANDOM = new Random();
 
@@ -26,106 +22,42 @@ public class Tetromino extends Group {
             {1, 1, 1, 1},
             {0, 0, 0, 0},
             {0, 0, 0, 0}
-    },
-            //            new double[]{
-            //            0.0, 0.0,
-            //            0.0, 1.0,
-            //            4.0, 1.0,
-            //            4.0, 4.0,
-            //            4.0, 2.0,
-            //            0.0, 2.0},
-            Color.CYAN);
+    }, Color.CYAN);
 
     private static final TetrominoDefinition J = new TetrominoDefinition(new int[][]{
             {1, 0, 0},
             {1, 1, 1},
             {0, 0, 0}
-    },
-            //            new double[]{
-            //            0.0, 0.0,
-            //            1.0, 0.0,
-            //            1.0, 1.0,
-            //            3.0, 1.0,
-            //            3.0, 3.0,
-            //            3.0, 2.0,
-            //            0.0, 2.0},
-            Color.BLUE);
+    }, Color.BLUE);
 
     private static final TetrominoDefinition L = new TetrominoDefinition(new int[][]{
             {0, 0, 1},
             {1, 1, 1},
-            {0, 0, 0}},
-            //            new double[]{
-            //            3.0, 3.0,
-            //            3.0, 0.0,
-            //            2.0, 0.0,
-            //            2.0, 1.0,
-            //            0.0, 1.0,
-            //            0.0, 2.0,
-            //            3.0, 2.0},
-            Color.ORANGE);
+            {0, 0, 0}
+    }, Color.ORANGE);
 
     private static final TetrominoDefinition O = new TetrominoDefinition(new int[][]{
             {1, 1},
             {1, 1}
-    },
-            //            new double[]{
-            //            0.0, 0.0,
-            //            0.0, 2.0,
-            //            2.0, 2.0,
-            //            2.0, 0.0},
-            Color.YELLOW);
+    }, Color.YELLOW);
 
     private static final TetrominoDefinition S = new TetrominoDefinition(new int[][]{
             {0, 1, 1},
             {1, 1, 0},
             {0, 0, 0}
-    },
-            //            new double[]{
-            //            0.0, 1.0,
-            //            1.0, 1.0,
-            //            1.0, 0.0,
-            //            3.0, 0.0,
-            //            3.0, 3.0,
-            //            3.0, 1.0,
-            //            2.0, 1.0,
-            //            2.0, 2.0,
-            //            0.0, 2.0},
-            Color.GREENYELLOW);
+    }, Color.GREENYELLOW);
 
     private static final TetrominoDefinition T = new TetrominoDefinition(new int[][]{
             {0, 1, 0},
             {1, 1, 1},
             {0, 0, 0}
-    },
-            //            new double[]{
-            //            0.0, 1.0,
-            //            1.0, 1.0,
-            //            1.0, 0.0,
-            //            2.0, 0.0,
-            //            2.0, 1.0,
-            //            3.0, 1.0,
-            //            3.0, 3.0,
-            //            3.0, 2.0,
-            //            0.0, 2.0},
-            Color.PURPLE);
+    }, Color.PURPLE);
 
     private static final TetrominoDefinition Z = new TetrominoDefinition(new int[][]{
             {1, 1, 0},
             {0, 1, 1},
             {0, 0, 0}
-    },
-            //            new double[]{
-            //            0.0, 1.0,
-            //            1.0, 1.0,
-            //            1.0, 0.0,
-            //            3.0, 0.0,
-            //            3.0, 3.0,
-            //            3.0, 1.0,
-            //            2.0, 1.0,
-            //            2.0, 2.0,
-            //            0.0, 2.0},
-            Color.ORANGERED);
+    }, Color.ORANGERED);
 
     private static final TetrominoDefinition[] TETROMINO_DEFINITIONS = new TetrominoDefinition[]{I, J, L, O, S, T, Z};
 
