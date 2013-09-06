@@ -45,6 +45,7 @@ final class GameController {
     public void start() {
         soundManager.playFromStart();
         board.start();
+        pointManager.pointsProperty().set(0);
         paused.set(false);
     }
 

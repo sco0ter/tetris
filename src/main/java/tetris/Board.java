@@ -1,16 +1,22 @@
 package tetris;
 
 import javafx.animation.*;
+import javafx.application.Platform;
+import javafx.beans.binding.DoubleBinding;
+import javafx.beans.binding.ObjectBinding;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.beans.value.WeakChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.HorizontalDirection;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.effect.Light;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
@@ -124,22 +130,44 @@ final class Board extends StackPane {
      */
     private List<BoardListener> boardListeners = new CopyOnWriteArrayList<BoardListener>();
 
+    private DoubleProperty squareSize = new SimpleDoubleProperty();
+
     /**
      * Creates the board.
      */
     public Board() {
         setFocusTraversable(true);
 
-        setOnMouseClicked(new EventHandler<MouseEvent>() {
-            public void handle(MouseEvent mouseEvent) {
-                requestFocus();
-            }
-        });
 
         setId("board");
-        setMinWidth(SQUARE * BLOCKS_PER_ROW);
-        setMinHeight(SQUARE * BLOCKS_PER_COLUMN);
-        setClip(new Rectangle(SQUARE * BLOCKS_PER_ROW, SQUARE * BLOCKS_PER_COLUMN));
+        setMinWidth(35 * BLOCKS_PER_ROW);
+        setMinHeight(35 * BLOCKS_PER_COLUMN);
+
+        maxWidthProperty().bind(minWidthProperty());
+        maxHeightProperty().bind(minHeightProperty());
+        //setStyle("-fx-border-color:red");
+        //        minHeightProperty().bind(new DoubleBinding() {
+        //            {
+        //                super.bind(widthProperty());
+        //            }
+        //
+        //            @Override
+        //            protected double computeValue() {
+        //                return getWidth() * BLOCKS_PER_COLUMN / BLOCKS_PER_ROW;
+        //            }
+        //        });
+        //        maxHeightProperty().bind(minHeightProperty());
+
+        clipProperty().bind(new ObjectBinding<Node>() {
+            {
+                super.bind(widthProperty(), heightProperty());
+            }
+
+            @Override
+            protected Node computeValue() {
+                return new Rectangle(getWidth(), getHeight());
+            }
+        });
 
         setAlignment(Pos.TOP_LEFT);
 
@@ -188,6 +216,17 @@ final class Board extends StackPane {
         // Rotates the piece.
         rotateTransition = new RotateTransition(Duration.seconds(0.1));
         dropDownTransition = new TranslateTransition(Duration.seconds(0.1));
+
+        squareSize.bind(new DoubleBinding() {
+            {
+                super.bind(widthProperty());
+            }
+
+            @Override
+            protected double computeValue() {
+                return getWidth() / BLOCKS_PER_ROW;
+            }
+        });
     }
 
     /**
@@ -197,7 +236,7 @@ final class Board extends StackPane {
      * @param animation The animation.
      */
     private void registerPausableAnimation(final Animation animation) {
-        animation.statusProperty().addListener(new ChangeListener<Animation.Status>() {
+        /*animation.statusProperty().addListener(new ChangeListener<Animation.Status>() {
             @Override
             public void changed(ObservableValue<? extends Animation.Status> observableValue, Animation.Status status, Animation.Status status2) {
                 if (status2 == Animation.Status.STOPPED) {
@@ -206,7 +245,7 @@ final class Board extends StackPane {
                     runningAnimations.add(animation);
                 }
             }
-        });
+        });*/
     }
 
     /**
@@ -216,7 +255,7 @@ final class Board extends StackPane {
 
         // Fill the queue of waiting tetrominos, if it's empty.
         while (waitingTetrominos.size() <= MAX_PREVIEWS) {
-            waitingTetrominos.add(Tetromino.random());
+            waitingTetrominos.add(Tetromino.random(squareSize));
         }
 
         // Remove the first from the queue and spawn it.
@@ -238,10 +277,10 @@ final class Board extends StackPane {
         x = (matrix[0].length - currentTetromino.getMatrix().length) / 2;
         y = 0;
         // Translate the tetromino to its starting position.
-        currentTetromino.setTranslateY((y - Board.HIDDEN_ROWS) * Board.SQUARE);
-        currentTetromino.setTranslateX(x * Board.SQUARE);
+        currentTetromino.setTranslateY((y - Board.HIDDEN_ROWS) * getSquareSize());
+        currentTetromino.setTranslateX(x * getSquareSize());
 
-        translateTransition.setToX(currentTetromino.getTranslateX());
+        //translateTransition.setToX(currentTetromino.getTranslateX());
 
         // Start to move it.
         moveDown();
@@ -253,7 +292,8 @@ final class Board extends StackPane {
     private void tetrominoDropped() {
         if (y == 0) {
             // If the piece could not move and we are still in the initial y position, the game is over.
-            clear();
+            currentTetromino = null;
+            waitingTetrominos.clear();
             notifyGameOver();
         } else {
             mergeTetrominoWithBoard();
@@ -328,16 +368,32 @@ final class Board extends StackPane {
         for (int i = 0; i < tetrominoMatrix.length; i++) {
             for (int j = 0; j < tetrominoMatrix[i].length; j++) {
 
-                int x = this.x + j;
-                int y = this.y + i;
+                final int x = this.x + j;
+                final int y = this.y + i;
 
-                if (tetrominoMatrix[i][j] == 1) {
-                    Rectangle rectangle = new Rectangle(SQUARE, SQUARE);
+                if (tetrominoMatrix[i][j] == 1 && y < BLOCKS_PER_COLUMN + HIDDEN_ROWS && x < BLOCKS_PER_ROW) {
+                    final Rectangle rectangle = new Rectangle();
+
+                    ChangeListener<Number> changeListener = new ChangeListener<Number>() {
+                        @Override
+                        public void changed(ObservableValue<? extends Number> observableValue, Number number, Number number2) {
+                            rectangle.setWidth(number2.doubleValue());
+                            rectangle.setHeight(number2.doubleValue());
+                            rectangle.setTranslateX(number2.doubleValue() * x);
+                            rectangle.setTranslateY(number2.doubleValue() * (y - HIDDEN_ROWS));
+                        }
+                    };
+                    squareSize.addListener(new WeakChangeListener<Number>(changeListener));
+                    rectangle.setUserData(changeListener);
+                    rectangle.setWidth(squareSize.doubleValue());
+                    rectangle.setHeight(squareSize.doubleValue());
+                    rectangle.setTranslateX(squareSize.doubleValue() * x);
+                    rectangle.setTranslateY(squareSize.doubleValue() * (y - HIDDEN_ROWS));
+
                     rectangle.setFill(currentTetromino.getFill());
-                    ((Light.Distant) currentTetromino.getLighting().getLight()).azimuthProperty().set(245);
+                    ((Light.Distant) currentTetromino.getLighting().getLight()).azimuthProperty().set(225);
                     rectangle.setEffect(currentTetromino.getLighting());
-                    rectangle.setTranslateX(x * SQUARE);
-                    rectangle.setTranslateY((y - HIDDEN_ROWS) * SQUARE);
+
                     rectangle.setArcHeight(7);
                     rectangle.setArcWidth(7);
                     // Assign a rectangle to the board matrix.
@@ -404,15 +460,25 @@ final class Board extends StackPane {
      * @param by The amount of rows.
      * @return The transition, which animates the falling row.
      */
-    private Transition fallRow(int i, int by) {
+    private Transition fallRow(final int i, final int by) {
         ParallelTransition parallelTransition = new ParallelTransition();
 
         if (by > 0) {
             for (int j = 0; j < matrix[i].length; j++) {
-                Rectangle rectangle = matrix[i][j];
+                final Rectangle rectangle = matrix[i][j];
+
                 if (rectangle != null) {
-                    TranslateTransition translateTransition = new TranslateTransition(Duration.seconds(0.1), rectangle);
-                    translateTransition.setToY((i - HIDDEN_ROWS + by) * SQUARE);
+                    // Unbind the original y position, to allow the rectangle to move to its new one.
+                    rectangle.translateYProperty().unbind();
+                    final TranslateTransition translateTransition = new TranslateTransition(Duration.seconds(0.1), rectangle);
+                    translateTransition.toYProperty().bind(squareSize.multiply(i - HIDDEN_ROWS + by));
+                    translateTransition.setOnFinished(new EventHandler<ActionEvent>() {
+                        @Override
+                        public void handle(ActionEvent actionEvent) {
+                            translateTransition.toYProperty().unbind();
+                            //rectangle.translateYProperty().bind(squareSize.multiply(i - HIDDEN_ROWS + by));
+                        }
+                    });
                     parallelTransition.getChildren().add(translateTransition);
                 }
                 matrix[i + by][j] = rectangle;
@@ -510,7 +576,12 @@ final class Board extends StackPane {
      */
     public void start() {
         clear();
-        requestFocus();
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                requestFocus();
+            }
+        });
         spawnTetromino();
     }
 
@@ -533,7 +604,7 @@ final class Board extends StackPane {
         y--;
         isDropping = true;
         dropDownTransition.setNode(currentTetromino);
-        dropDownTransition.setToY((y - Board.HIDDEN_ROWS) * Board.SQUARE);
+        dropDownTransition.toYProperty().bind(squareSize.multiply(y - Board.HIDDEN_ROWS));
         dropDownTransition.setOnFinished(new EventHandler<ActionEvent>() {
             public void handle(ActionEvent actionEvent) {
                 isDropping = false;
@@ -584,6 +655,13 @@ final class Board extends StackPane {
 
                 final ParallelTransition parallelTransition = new ParallelTransition(rotateTransition, lightingAnimation);
                 registerPausableAnimation(parallelTransition);
+                parallelTransition.setOnFinished(new EventHandler<ActionEvent>() {
+                    @Override
+                    public void handle(ActionEvent actionEvent) {
+                        // clear, because otherwise parallelTransition won't be gc'ed because it has reference to rotateTransition.
+                        parallelTransition.getChildren().clear();
+                    }
+                });
                 parallelTransition.playFromStart();
                 result = true;
             }
@@ -613,7 +691,8 @@ final class Board extends StackPane {
             // If it is not moving, only check the current y position.
             // If it is moving, also check the target y position.
             if (!moving && !intersectsWithBoard(currentTetromino.getMatrix(), x, y) || moving && !intersectsWithBoard(currentTetromino.getMatrix(), x, y) && !intersectsWithBoard(currentTetromino.getMatrix(), x, y + 1)) {
-                translateTransition.setToX(x * Board.SQUARE);
+                translateTransition.toXProperty().unbind();
+                translateTransition.toXProperty().bind(squareSize.multiply(x));
                 translateTransition.playFromStart();
                 result = true;
             } else {
@@ -639,8 +718,9 @@ final class Board extends StackPane {
 
             // If it is able to move to the next y position, do it!
             if (!intersectsWithBoard(currentTetromino.getMatrix(), x, y + 1) && !isDropping) {
-                moveDownTransition.setFromY(moveDownTransition.getNode().getTranslateY());
-                moveDownTransition.setToY((y + 1 - Board.HIDDEN_ROWS) * Board.SQUARE);
+                //moveDownTransition.setFromY(moveDownTransition.getNode().getTranslateY());
+                moveDownTransition.toYProperty().unbind();
+                moveDownTransition.toYProperty().bind(squareSize.multiply(y + 1 - Board.HIDDEN_ROWS));
                 moveTransition.playFromStart();
             } else {
                 tetrominoDropped();
@@ -659,7 +739,8 @@ final class Board extends StackPane {
             // Then check, if the next position, would not intersect with the board.
             if (!intersectsWithBoard(currentTetromino.getMatrix(), x, y + 1)) {
                 // If it can move, move it!
-                moveDownFastTransition.setToY((y + 1 - Board.HIDDEN_ROWS) * Board.SQUARE);
+                moveDownFastTransition.toYProperty().unbind();
+                moveDownFastTransition.toYProperty().bind(squareSize.multiply(y + 1 - Board.HIDDEN_ROWS));
                 moveDownFastTransition.playFromStart();
             } else {
                 // Otherwise it has reached ground.
@@ -706,6 +787,10 @@ final class Board extends StackPane {
         return waitingTetrominos;
     }
 
+    public double getSquareSize() {
+        return squareSize.get();
+    }
+
     /**
      * Adds a listener to the board, which gets notified for certain events.
      *
@@ -728,6 +813,7 @@ final class Board extends StackPane {
      * Allows to listen for certain board events.
      */
     public static interface BoardListener extends EventListener {
+
 
         /**
          * Called, when a tetromino is dropped or a complete row is dropped after some rows were eliminated.

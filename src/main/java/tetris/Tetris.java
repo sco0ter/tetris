@@ -11,6 +11,8 @@ import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
@@ -33,7 +35,7 @@ public final class Tetris extends Application {
         final GameController gameController = new GameController();
 
         final MainBox mainBox = new MainBox(gameController);
-
+        VBox.setVgrow(mainBox, Priority.ALWAYS);
         MenuBar bar = new MenuBar();
 
         Menu menu = new Menu("Tetris");
@@ -67,7 +69,11 @@ public final class Tetris extends Application {
                 }
             }
         });
-
+        scene.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            public void handle(MouseEvent mouseEvent) {
+                gameController.getBoard().requestFocus();
+            }
+        });
 
         scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
             public void handle(KeyEvent keyEvent) {

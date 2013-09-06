@@ -1,5 +1,9 @@
 package tetris;
 
+import javafx.beans.property.ReadOnlyDoubleProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.beans.value.WeakChangeListener;
 import javafx.scene.CacheHint;
 import javafx.scene.Group;
 import javafx.scene.effect.Light;
@@ -8,6 +12,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -72,57 +78,70 @@ final class Tetromino extends Group {
 
     private TetrominoDefinition tetrominoDefinition;
 
-    private Tetromino(TetrominoDefinition tetrominoDefinition) {
+    private ReadOnlyDoubleProperty squareSize;
+
+    //private List<ChangeListener<Number>> changeListeners = new ArrayList<ChangeListener<Number>>();
+
+    private Tetromino(TetrominoDefinition tetrominoDefinition, ReadOnlyDoubleProperty squareSize) {
         this.matrix = tetrominoDefinition.matrix;
         this.tetrominoDefinition = tetrominoDefinition;
-        //paint = new LinearGradient(0, 0, 0, 100, false, CycleMethod.NO_CYCLE, new Stop(0, tetrominoDefinition.color.brighter().brighter()), new Stop(1, tetrominoDefinition.color.darker()));
-        //paint = new RadialGradient(180, 10, 17, 17, 17, false, CycleMethod.NO_CYCLE, new Stop(0, tetrominoDefinition.color.brighter().brighter()), new Stop(1, tetrominoDefinition.color.darker()));
+        this.squareSize = squareSize;
         paint = tetrominoDefinition.color;
 
-        lighting = new Lighting(new Light.Distant(240, 55, Color.WHITE));
+        lighting = new Lighting(new Light.Distant(225, 55, Color.WHITE));
 
 
         lighting.setSurfaceScale(0.8);
         for (int i = 0; i < matrix.length; i++) {
             for (int j = 0; j < matrix[i].length; j++) {
+
+                final Rectangle rectangle = new Rectangle();
+                final int finalI = i;
+                final int finalJ = j;
+                ChangeListener<Number> changeListener = new ChangeListener<Number>() {
+                    @Override
+                    public void changed(ObservableValue<? extends Number> observableValue, Number number, Number number2) {
+                        rectangle.setWidth(number2.doubleValue());
+                        rectangle.setHeight(number2.doubleValue());
+                        rectangle.setTranslateY(number2.doubleValue() * finalI);
+                        rectangle.setTranslateX(number2.doubleValue() * finalJ);
+                    }
+                };
+                rectangle.setUserData(changeListener);
+                //changeListeners.add(changeListener);
+                // Don't use binding to squareSize because this will cause memory leaks due to a bug in JavaFX 2.
+                squareSize.addListener(new WeakChangeListener<Number>(changeListener));
+                rectangle.setWidth(squareSize.doubleValue());
+                rectangle.setHeight(squareSize.get());
+                rectangle.setTranslateY(squareSize.get() * finalI);
+                rectangle.setTranslateX(squareSize.get() * finalJ);
+
                 if (matrix[i][j] == 1) {
-                    Rectangle rectangle = new Rectangle(Board.SQUARE * 1, Board.SQUARE * 1);
-                    rectangle.setTranslateY(Board.SQUARE * (i));
-                    rectangle.setTranslateX(Board.SQUARE * (j));
                     rectangle.setEffect(lighting);
                     rectangle.setFill(tetrominoDefinition.color);
                     rectangle.setFill(paint);
                     rectangle.setArcHeight(7);
                     rectangle.setArcWidth(7);
-                    getChildren().add(rectangle);
                 } else {
-                    Rectangle rectangle = new Rectangle(Board.SQUARE * 1, Board.SQUARE * 1);
-                    rectangle.setTranslateY(Board.SQUARE * (i));
-                    rectangle.setTranslateX(Board.SQUARE * (j));
                     rectangle.setOpacity(0);
-                    getChildren().add(rectangle);
-
                 }
+                getChildren().add(rectangle);
 
             }
         }
-        //setFill(new LinearGradient(0, 0, 0, 100, false, CycleMethod.NO_CYCLE, new Stop(0, tetrominoDefinition.color), new Stop(1, tetrominoDefinition.color.darker())));
-        //setFill(tetrominoDefinition.color);
-
-        //setEffect(new Lighting(light));
 
         setCacheHint(CacheHint.SPEED);
         setCache(true);
     }
 
-    public static Tetromino random() {
+    public static Tetromino random(ReadOnlyDoubleProperty squareSize) {
         TetrominoDefinition tetrominoDefinition = TETROMINO_DEFINITIONS[RANDOM.nextInt(7)];
 
-        return new Tetromino(tetrominoDefinition);
+        return new Tetromino(tetrominoDefinition, squareSize);
     }
 
     public Tetromino clone() {
-        return new Tetromino(tetrominoDefinition);
+        return new Tetromino(tetrominoDefinition, squareSize);
     }
 
     public Paint getFill() {

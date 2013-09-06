@@ -1,4 +1,5 @@
 import javafx.animation.Animation;
+import javafx.animation.ParallelTransition;
 import javafx.animation.TranslateTransition;
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
@@ -19,12 +20,15 @@ public class MemoryLeakTest extends Application {
         launch();
     }
       private List<Node> nodes = new ArrayList<Node>();
+
+    ParallelTransition parallelTransition = new ParallelTransition();
+
     @Override
     public void start(Stage stage) throws Exception {
         VBox root = new VBox();
 
 
-        //Node node = new Label();
+
 
         for (int i = 0; i < 10000; i++) {
             Node node = new Label();

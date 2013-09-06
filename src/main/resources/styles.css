@@ -22,7 +22,7 @@
     -fx-effect: dropshadow( three-pass-box , rgba(255,255,255,0.2) , 1, 0.0 , 0 , 1);
 }
 
-.button {
+.fbutton {
     -fx-background-color:
         linear-gradient(#ffd65b, #e68400),
         linear-gradient(#ffef84, #f2ba44),

@@ -106,6 +106,7 @@ final class NotificationOverlay extends StackPane implements Board.BoardListener
     @Override
     public void onGameOver() {
         showGameOver();
+        //setStyle("-fx-background-color: rgba(51, 51, 51, 0.6)");
     }
 
     @Override
