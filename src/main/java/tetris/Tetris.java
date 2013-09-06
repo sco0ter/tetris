@@ -1,67 +1,58 @@
 package tetris;
 
-import javafx.application.Application;
-import javafx.event.ActionEvent;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.EventHandler;
 import javafx.geometry.HorizontalDirection;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.CheckMenuItem;
-import javafx.scene.control.Menu;
-import javafx.scene.control.MenuBar;
-import javafx.scene.control.MenuItem;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
+import javafx.scene.layout.StackPane;
 
-public final class Tetris extends Application {
+/**
+ * @author Christian Schudt
+ */
+final class Tetris extends HBox {
 
     /**
      * Stores if the arrow down key was pressed, to prevent repeated events.
      */
     private boolean movingDown = false;
 
-    public static void main(String[] args) {
-        launch(args);
-    }
 
-    @Override
-    public void start(Stage primaryStage) throws Exception {
+    public Tetris() {
 
-        VBox group = new VBox();
+        setId("tetris");
 
-        final GameController gameController = new GameController();
-
-        final MainBox mainBox = new MainBox(gameController);
-        VBox.setVgrow(mainBox, Priority.ALWAYS);
-        MenuBar bar = new MenuBar();
-
-        Menu menu = new Menu("Tetris");
-
-        MenuItem startNewGameMenuItem = new MenuItem("Start new Game");
-        startNewGameMenuItem.setOnAction(new EventHandler<ActionEvent>() {
+        sceneProperty().addListener(new ChangeListener<Scene>() {
             @Override
-            public void handle(ActionEvent actionEvent) {
-                gameController.start();
+            public void changed(ObservableValue<? extends Scene> observableValue, Scene scene, Scene scene2) {
+                if (scene2 != null) {
+                    scene2.getStylesheets().add("tetris/styles.css");
+                }
             }
         });
+        final GameController gameController = new GameController();
 
-        CheckMenuItem pauseMenuItem = new CheckMenuItem("Pause");
+        StackPane stackPane = new StackPane();
+        stackPane.getChildren().add(gameController.getBoard());
 
-        pauseMenuItem.selectedProperty().bindBidirectional(gameController.pausedProperty());
+        stackPane.getChildren().add(gameController.getNotificationOverlay());
+        stackPane.setAlignment(Pos.TOP_CENTER);
 
-        bar.getMenus().add(menu);
-        menu.getItems().addAll(startNewGameMenuItem);
-        menu.getItems().add(pauseMenuItem);
-        bar.setUseSystemMenuBar(true);
-        group.getChildren().add(bar);
+        getChildren().add(stackPane);
 
-        group.getChildren().add(mainBox);
-        primaryStage.setTitle("Tetris");
-        Scene scene = new Scene(group);
-        scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
+        InfoBox infoBox = new InfoBox(gameController);
+        infoBox.maxHeightProperty().bind(gameController.getBoard().heightProperty());
+
+        HBox.setHgrow(infoBox, Priority.ALWAYS);
+        getChildren().add(infoBox);
+
+        setOnKeyPressed(new EventHandler<KeyEvent>() {
             @Override
             public void handle(KeyEvent keyEvent) {
                 if (keyEvent.getCode() == KeyCode.P) {
@@ -69,13 +60,13 @@ public final class Tetris extends Application {
                 }
             }
         });
-        scene.setOnMouseClicked(new EventHandler<MouseEvent>() {
+        setOnMouseClicked(new EventHandler<MouseEvent>() {
             public void handle(MouseEvent mouseEvent) {
                 gameController.getBoard().requestFocus();
             }
         });
 
-        scene.setOnKeyPressed(new EventHandler<KeyEvent>() {
+        setOnKeyPressed(new EventHandler<KeyEvent>() {
             public void handle(KeyEvent keyEvent) {
 
                 if (keyEvent.getCode() == KeyCode.LEFT && !gameController.pausedProperty().get()) {
@@ -104,7 +95,7 @@ public final class Tetris extends Application {
             }
         });
 
-        scene.setOnKeyReleased(new EventHandler<KeyEvent>() {
+        setOnKeyReleased(new EventHandler<KeyEvent>() {
             @Override
             public void handle(KeyEvent keyEvent) {
                 if (keyEvent.getCode() == KeyCode.DOWN) {
@@ -114,9 +105,5 @@ public final class Tetris extends Application {
             }
         });
 
-
-        scene.getStylesheets().add("styles.css");
-        primaryStage.setScene(scene);
-        primaryStage.show();
     }
 }

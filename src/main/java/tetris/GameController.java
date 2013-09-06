@@ -43,15 +43,19 @@ final class GameController {
     }
 
     public void start() {
-        soundManager.playFromStart();
         board.start();
         pointManager.pointsProperty().set(0);
         paused.set(false);
     }
 
     private void pause() {
-        soundManager.pause();
         board.pause();
+    }
+
+    public void stop() {
+        board.clear();
+        pointManager.scoreProperty().set(0);
+        paused.set(false);
     }
 
     public Board getBoard() {
@@ -64,7 +68,6 @@ final class GameController {
 
     public void play() {
         paused.set(false);
-        soundManager.play();
         board.play();
     }
 

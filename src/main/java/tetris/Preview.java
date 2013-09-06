@@ -102,15 +102,13 @@ final class Preview extends StackPane {
             }
         });
 
-        setMinHeight(Board.SQUARE * 9);
-        setPrefHeight(Board.SQUARE * 9);
-
+        setPrefHeight(200);
+        setPrefWidth(200);
         setAlignment(Pos.CENTER);
 
         if (!tetrominos.isEmpty()) {
             getChildren().addAll(tetrominos.get(0));
         }
-        setPrefSize(100, 100);
 
     }
 }

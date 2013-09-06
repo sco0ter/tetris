@@ -130,8 +130,8 @@ final class Tetromino extends Group {
             }
         }
 
-        setCacheHint(CacheHint.SPEED);
-        setCache(true);
+        //setCacheHint(CacheHint.SPEED);
+        //setCache(true);
     }
 
     public static Tetromino random(ReadOnlyDoubleProperty squareSize) {

@@ -33,10 +33,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * @author Christian Schudt
  */
 final class Board extends StackPane {
-    /**
-     * The width and height of a square unit.
-     */
-    public static final byte SQUARE = 35;
 
     /**
      * The number of hidden rows, which are located invisible above the board.
@@ -216,6 +212,7 @@ final class Board extends StackPane {
         // Rotates the piece.
         rotateTransition = new RotateTransition(Duration.seconds(0.1));
         dropDownTransition = new TranslateTransition(Duration.seconds(0.1));
+        dropDownTransition.setInterpolator(Interpolator.EASE_IN);
 
         squareSize.bind(new DoubleBinding() {
             {
@@ -236,7 +233,7 @@ final class Board extends StackPane {
      * @param animation The animation.
      */
     private void registerPausableAnimation(final Animation animation) {
-        /*animation.statusProperty().addListener(new ChangeListener<Animation.Status>() {
+        animation.statusProperty().addListener(new ChangeListener<Animation.Status>() {
             @Override
             public void changed(ObservableValue<? extends Animation.Status> observableValue, Animation.Status status, Animation.Status status2) {
                 if (status2 == Animation.Status.STOPPED) {
@@ -245,7 +242,7 @@ final class Board extends StackPane {
                     runningAnimations.add(animation);
                 }
             }
-        });*/
+        });
     }
 
     /**
@@ -380,15 +377,16 @@ final class Board extends StackPane {
                             rectangle.setWidth(number2.doubleValue());
                             rectangle.setHeight(number2.doubleValue());
                             rectangle.setTranslateX(number2.doubleValue() * x);
-                            rectangle.setTranslateY(number2.doubleValue() * (y - HIDDEN_ROWS));
+                            rectangle.setTranslateY(number2.doubleValue() * ((Integer) rectangle.getProperties().get("y")));
                         }
                     };
                     squareSize.addListener(new WeakChangeListener<Number>(changeListener));
                     rectangle.setUserData(changeListener);
+                    rectangle.getProperties().put("y", y - HIDDEN_ROWS);
                     rectangle.setWidth(squareSize.doubleValue());
                     rectangle.setHeight(squareSize.doubleValue());
                     rectangle.setTranslateX(squareSize.doubleValue() * x);
-                    rectangle.setTranslateY(squareSize.doubleValue() * (y - HIDDEN_ROWS));
+                    rectangle.setTranslateY(squareSize.doubleValue() * ((Integer) rectangle.getProperties().get("y")));
 
                     rectangle.setFill(currentTetromino.getFill());
                     ((Light.Distant) currentTetromino.getLighting().getLight()).azimuthProperty().set(225);
@@ -445,9 +443,13 @@ final class Board extends StackPane {
         sequentialTransition.setOnFinished(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
+                //sequentialTransition.getChildren().clear();
                 spawnTetromino();
             }
         });
+        // Cached nodes leak memory
+        // https://javafx-jira.kenai.com/browse/RT-32733
+        //currentTetromino.setCache(false);
         getChildren().remove(currentTetromino);
         currentTetromino = null;
         registerPausableAnimation(sequentialTransition);
@@ -469,13 +471,16 @@ final class Board extends StackPane {
 
                 if (rectangle != null) {
                     // Unbind the original y position, to allow the rectangle to move to its new one.
-                    rectangle.translateYProperty().unbind();
+                    //rectangle.translateYProperty().unbind();
                     final TranslateTransition translateTransition = new TranslateTransition(Duration.seconds(0.1), rectangle);
+                    rectangle.getProperties().put("y", i - HIDDEN_ROWS + by);
+
                     translateTransition.toYProperty().bind(squareSize.multiply(i - HIDDEN_ROWS + by));
                     translateTransition.setOnFinished(new EventHandler<ActionEvent>() {
                         @Override
                         public void handle(ActionEvent actionEvent) {
                             translateTransition.toYProperty().unbind();
+
                             //rectangle.translateYProperty().bind(squareSize.multiply(i - HIDDEN_ROWS + by));
                         }
                     });
@@ -683,7 +688,7 @@ final class Board extends StackPane {
      */
     public boolean move(final HorizontalDirection direction) {
         boolean result;
-        if (currentTetromino == null) {
+        if (currentTetromino == null || isDropping) {
             result = false;
         } else {
             int i = direction == HorizontalDirection.RIGHT ? 1 : -1;

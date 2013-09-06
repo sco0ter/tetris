@@ -1,10 +1,19 @@
 package tetris;
 
 import javafx.beans.binding.Bindings;
+import javafx.beans.binding.ObjectBinding;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.effect.Reflection;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
 import java.util.concurrent.Callable;
@@ -13,43 +22,64 @@ import java.util.concurrent.Callable;
 /**
  * @author Christian Schudt
  */
-final class InfoBox extends VBox {
+final class InfoBox extends StackPane {
     public InfoBox(final GameController gameController) {
 
-        setPadding(new Insets(20, 20, 20, 20));
-        setSpacing(10);
+        VBox root = new VBox();
+
+        root.setPadding(new Insets(20, 20, 20, 20));
+        root.setSpacing(10);
 
         setId("infoBox");
 
-        Label label = new Label("Sound");
-        label.getStyleClass().add("header");
-
-        getChildren().add(label);
-        getChildren().add(new Separator());
-
-        CheckBox checkBox = new CheckBox("Stumm schalten");
+        CheckBox checkBox = new CheckBox();
+        checkBox.getStyleClass().add("mute");
+        checkBox.setMinSize(64, 64);
+        checkBox.setMaxSize(64, 64);
         checkBox.selectedProperty().set(true);
-        gameController.getSoundManager().getMediaPlayer().muteProperty().bind(checkBox.selectedProperty());
+        checkBox.selectedProperty().addListener(new ChangeListener<Boolean>() {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observableValue, Boolean aBoolean, Boolean aBoolean2) {
+                gameController.getBoard().requestFocus();
+            }
+        });
+        gameController.getSoundManager().muteProperty().bind(checkBox.selectedProperty());
 
-        Label lblVolume = new Label("Hintergrundmusik:");
+        Slider sliderMusicVolume = new Slider();
+        sliderMusicVolume.setMin(0);
+        sliderMusicVolume.setMax(1);
+        sliderMusicVolume.setValue(0.5);
+        sliderMusicVolume.setFocusTraversable(false);
+        sliderMusicVolume.valueChangingProperty().addListener(new ChangeListener<Boolean>() {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observableValue, Boolean aBoolean, Boolean aBoolean2) {
+                if (!aBoolean2) {
+                    gameController.getBoard().requestFocus();
+                }
+            }
+        });
+        gameController.getSoundManager().volumeProperty().bind(sliderMusicVolume.valueProperty());
 
-        getChildren().add(lblVolume);
+        Slider sliderSoundVolume = new Slider();
+        sliderSoundVolume.setMin(0);
+        sliderSoundVolume.setMax(1);
+        sliderSoundVolume.setValue(0.5);
+        sliderSoundVolume.setFocusTraversable(false);
+        gameController.getSoundManager().soundVolumeProperty().bind(sliderSoundVolume.valueProperty());
+        sliderSoundVolume.valueChangingProperty().addListener(new ChangeListener<Boolean>() {
+            @Override
+            public void changed(ObservableValue<? extends Boolean> observableValue, Boolean aBoolean, Boolean aBoolean2) {
+                if (!aBoolean2) {
+                    gameController.getBoard().requestFocus();
+                }
+            }
+        });
 
-        Slider sliderVolume = new Slider();
-        sliderVolume.setMin(0);
-        sliderVolume.setMax(1);
-        sliderVolume.setValue(0.2);
-        sliderVolume.setTooltip(new Tooltip("Lautstärke"));
-        gameController.getSoundManager().getMediaPlayer().volumeProperty().bind(sliderVolume.valueProperty());
+        final ImageView playImageView = new ImageView(new Image(getClass().getResourceAsStream("/tetris/play.png")));
+        final ImageView pauseImageView = new ImageView(new Image(getClass().getResourceAsStream("/tetris/pause.png")));
 
-        Slider sliderBalance = new Slider();
-        sliderBalance.setMin(-1);
-        sliderBalance.setMax(1);
-        sliderBalance.setValue(0);
-        sliderBalance.setTooltip(new Tooltip("Balance"));
-        gameController.getSoundManager().getMediaPlayer().balanceProperty().bind(sliderBalance.valueProperty());
-
-        Button btnStart = new Button("Start");
+        Button btnStart = new Button("New Game");
+        btnStart.setGraphic(new ImageView(new Image(getClass().getResourceAsStream("/tetris/rotate-left.png"))));
         btnStart.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
@@ -57,44 +87,68 @@ final class InfoBox extends VBox {
             }
         });
 
-
+        btnStart.setMaxWidth(Double.MAX_VALUE);
+        btnStart.setAlignment(Pos.CENTER_LEFT);
         Button btnPause = new Button("Pause");
+        btnPause.graphicProperty().bind(new ObjectBinding<Node>() {
+            {
+                super.bind(gameController.pausedProperty());
+            }
+
+            @Override
+            protected Node computeValue() {
+                if (gameController.pausedProperty().get()) {
+                    return playImageView;
+                } else {
+                    return pauseImageView;
+                }
+            }
+        });
+
         btnPause.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent actionEvent) {
-                gameController.pausedProperty().set(true);
+                if (gameController.pausedProperty().get()) {
+                    gameController.pausedProperty().set(false);
+                } else {
+                    gameController.pausedProperty().set(true);
+
+                }
             }
         });
-
-        Button btnResume = new Button("Resume");
-        btnResume.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent actionEvent) {
-                gameController.play();
-            }
-        });
-
+        btnPause.setMaxWidth(Double.MAX_VALUE);
+        btnPause.setAlignment(Pos.CENTER_LEFT);
         Preview preview = new Preview(gameController);
 
 
-        getChildren().add(checkBox);
-        getChildren().add(sliderVolume);
-        getChildren().add(sliderBalance);
+        root.getChildren().add(checkBox);
+        root.getChildren().add(sliderMusicVolume);
+        root.getChildren().add(sliderSoundVolume);
 
         Label lblPoints = new Label();
-        lblPoints.setStyle("-fx-text-fill: #ffffff");
+        lblPoints.getStyleClass().add("points");
         lblPoints.textProperty().bind(Bindings.createStringBinding(new Callable<String>() {
             @Override
             public String call() throws Exception {
                 return String.valueOf(gameController.getPointManager().pointsProperty().get());
             }
         }, gameController.getPointManager().pointsProperty()));
+        lblPoints.setAlignment(Pos.CENTER_RIGHT);
+        lblPoints.setMaxWidth(Double.MAX_VALUE);
+        lblPoints.setEffect(new Reflection());
 
-        getChildren().add(preview);
-        getChildren().add(btnStart);
-        getChildren().add(btnPause);
-        getChildren().addAll(btnResume);
-        getChildren().addAll(lblPoints);
+        root.getChildren().add(preview);
+        root.getChildren().add(btnStart);
+        root.getChildren().add(btnPause);
+
+        Label lblInfo = new Label("Use arrow keys for movement\nand rotating and space for\ndropping the piece.");
+
+        root.getChildren().add(lblInfo);
+
+        root.getChildren().addAll(lblPoints);
+
+
+        getChildren().add(root);
 
     }
 }

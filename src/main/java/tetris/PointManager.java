@@ -28,7 +28,6 @@ final class PointManager implements Board.BoardListener {
 
     @Override
     public void onDropped() {
-
     }
 
     @Override
@@ -51,22 +50,17 @@ final class PointManager implements Board.BoardListener {
 
     @Override
     public void onGameOver() {
-
     }
 
     @Override
     public void onInvalidMove() {
-
     }
 
     @Override
     public void onMove(HorizontalDirection horizontalDirection) {
-        System.gc();
-        System.out.println(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory());
     }
 
     @Override
     public void onRotate(HorizontalDirection horizontalDirection) {
-
     }
 }
