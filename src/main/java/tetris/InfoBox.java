@@ -1,3 +1,27 @@
+/*
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2013 Christian Schudt
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 package tetris;
 
 import javafx.beans.binding.Bindings;
@@ -9,11 +33,13 @@ import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.Slider;
 import javafx.scene.effect.Reflection;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
 import java.util.concurrent.Callable;
@@ -22,13 +48,10 @@ import java.util.concurrent.Callable;
 /**
  * @author Christian Schudt
  */
-final class InfoBox extends StackPane {
+final class InfoBox extends VBox {
     public InfoBox(final GameController gameController) {
-
-        VBox root = new VBox();
-
-        root.setPadding(new Insets(20, 20, 20, 20));
-        root.setSpacing(10);
+        setPadding(new Insets(20, 20, 20, 20));
+        setSpacing(10);
 
         setId("infoBox");
 
@@ -87,6 +110,17 @@ final class InfoBox extends StackPane {
             }
         });
 
+        Button btnStop = new Button("Stop");
+        btnStop.setGraphic(new ImageView(new Image(getClass().getResourceAsStream("/tetris/stop.png"))));
+        btnStop.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                gameController.stop();
+            }
+        });
+        btnStop.setMaxWidth(Double.MAX_VALUE);
+        btnStop.setAlignment(Pos.CENTER_LEFT);
+
         btnStart.setMaxWidth(Double.MAX_VALUE);
         btnStart.setAlignment(Pos.CENTER_LEFT);
         Button btnPause = new Button("Pause");
@@ -121,34 +155,33 @@ final class InfoBox extends StackPane {
         Preview preview = new Preview(gameController);
 
 
-        root.getChildren().add(checkBox);
-        root.getChildren().add(sliderMusicVolume);
-        root.getChildren().add(sliderSoundVolume);
+        getChildren().add(checkBox);
+        getChildren().add(sliderMusicVolume);
+        getChildren().add(sliderSoundVolume);
 
         Label lblPoints = new Label();
-        lblPoints.getStyleClass().add("points");
+        lblPoints.getStyleClass().add("score");
         lblPoints.textProperty().bind(Bindings.createStringBinding(new Callable<String>() {
             @Override
             public String call() throws Exception {
-                return String.valueOf(gameController.getPointManager().pointsProperty().get());
+                return String.valueOf(gameController.getScoreManager().scoreProperty().get());
             }
-        }, gameController.getPointManager().pointsProperty()));
+        }, gameController.getScoreManager().scoreProperty()));
         lblPoints.setAlignment(Pos.CENTER_RIGHT);
         lblPoints.setMaxWidth(Double.MAX_VALUE);
         lblPoints.setEffect(new Reflection());
 
-        root.getChildren().add(preview);
-        root.getChildren().add(btnStart);
-        root.getChildren().add(btnPause);
+        getChildren().add(preview);
+        getChildren().add(btnStart);
+        getChildren().add(btnPause);
+        getChildren().add(btnStop);
 
         Label lblInfo = new Label("Use arrow keys for movement\nand rotating and space for\ndropping the piece.");
 
-        root.getChildren().add(lblInfo);
+        getChildren().add(lblInfo);
 
-        root.getChildren().addAll(lblPoints);
+        getChildren().addAll(lblPoints);
 
-
-        getChildren().add(root);
 
     }
 }

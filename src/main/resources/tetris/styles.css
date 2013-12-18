@@ -9,7 +9,7 @@
     -fx-text-fill: white;
 }
 
-.label.points {
+.label.score {
     -fx-font-size: 4em;
 }
 
@@ -22,8 +22,8 @@
         linear-gradient(#777777 0%, #606060 50%, #505250 51%, #2a2b2a 100%);
     -fx-background-insets: 0,1,4,5,6;
     -fx-background-radius: 9,8,5,4,3;
-    -fx-pasdding: 15 30 15 30;
-    -fx-font-size: 18px;
+    -fx-pasdding: 10 30 10 30;
+    -fx-font-size: 14px;
     -fx-font-weight: bold;
     -fx-text-fill: white;
     -fx-effect: dropshadow( three-pass-box , rgba(255,255,255,0.2) , 1, 0.0 , 0 , 1);

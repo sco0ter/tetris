@@ -1,3 +1,27 @@
+/*
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2013 Christian Schudt
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 package tetris;
 
 import javafx.animation.*;
@@ -84,7 +108,7 @@ final class Board extends StackPane {
     /**
      * A set of running transitions. All running transitions are paused, when the game is paused.
      */
-    private final Set<Animation> runningAnimations = new HashSet<Animation>();
+    private final Set<Animation> runningAnimations = new HashSet<>();
 
     /**
      * The two-dimensional array, which defines the board. If an element is null in the matrix, it is empty, otherwise it is occupied.
@@ -124,7 +148,7 @@ final class Board extends StackPane {
     /**
      * Holds the board listeners.
      */
-    private List<BoardListener> boardListeners = new CopyOnWriteArrayList<BoardListener>();
+    private List<BoardListener> boardListeners = new CopyOnWriteArrayList<>();
 
     private DoubleProperty squareSize = new SimpleDoubleProperty();
 
@@ -380,7 +404,7 @@ final class Board extends StackPane {
                             rectangle.setTranslateY(number2.doubleValue() * ((Integer) rectangle.getProperties().get("y")));
                         }
                     };
-                    squareSize.addListener(new WeakChangeListener<Number>(changeListener));
+                    squareSize.addListener(new WeakChangeListener<>(changeListener));
                     rectangle.setUserData(changeListener);
                     rectangle.getProperties().put("y", y - HIDDEN_ROWS);
                     rectangle.setWidth(squareSize.doubleValue());
@@ -529,7 +553,7 @@ final class Board extends StackPane {
     /**
      * Clears the board and the waiting tetrominos.
      */
-    private void clear() {
+    public void clear() {
         for (int i = 0; i < BLOCKS_PER_COLUMN + HIDDEN_ROWS; i++) {
             for (int j = 0; j < BLOCKS_PER_ROW; j++) {
                 matrix[i][j] = null;
@@ -652,6 +676,7 @@ final class Board extends StackPane {
 
                 int f = direction == HorizontalDirection.RIGHT ? 1 : -1;
 
+                rotateTransition.setFromAngle(rotateTransition.getToAngle());
                 rotateTransition.setToAngle(rotateTransition.getToAngle() + f * 90);
 
                 KeyValue kv = new KeyValue(((Light.Distant) currentTetromino.getLighting().getLight()).azimuthProperty(), 360 - 225 + 90 - rotateTransition.getToAngle());

@@ -1,10 +1,33 @@
+/*
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2013 Christian Schudt
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 package tetris;
 
 import javafx.beans.property.ReadOnlyDoubleProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.beans.value.WeakChangeListener;
-import javafx.scene.CacheHint;
 import javafx.scene.Group;
 import javafx.scene.effect.Light;
 import javafx.scene.effect.Lighting;
@@ -12,14 +35,12 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 /**
  * @author Christian Schudt
  */
-final class Tetromino extends Group {
+final class Tetromino extends Group implements Cloneable {
 
     private static final Random RANDOM = new Random();
 
@@ -80,8 +101,6 @@ final class Tetromino extends Group {
 
     private ReadOnlyDoubleProperty squareSize;
 
-    //private List<ChangeListener<Number>> changeListeners = new ArrayList<ChangeListener<Number>>();
-
     private Tetromino(TetrominoDefinition tetrominoDefinition, ReadOnlyDoubleProperty squareSize) {
         this.matrix = tetrominoDefinition.matrix;
         this.tetrominoDefinition = tetrominoDefinition;
@@ -110,7 +129,7 @@ final class Tetromino extends Group {
                 rectangle.setUserData(changeListener);
                 //changeListeners.add(changeListener);
                 // Don't use binding to squareSize because this will cause memory leaks due to a bug in JavaFX 2.
-                squareSize.addListener(new WeakChangeListener<Number>(changeListener));
+                squareSize.addListener(new WeakChangeListener<>(changeListener));
                 rectangle.setWidth(squareSize.doubleValue());
                 rectangle.setHeight(squareSize.get());
                 rectangle.setTranslateY(squareSize.get() * finalI);
@@ -140,6 +159,7 @@ final class Tetromino extends Group {
         return new Tetromino(tetrominoDefinition, squareSize);
     }
 
+    @Override
     public Tetromino clone() {
         return new Tetromino(tetrominoDefinition, squareSize);
     }

@@ -1,3 +1,27 @@
+/*
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2013 Christian Schudt
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
 package tetris;
 
 import javafx.beans.property.BooleanProperty;
@@ -16,14 +40,14 @@ final class GameController {
 
     private final NotificationOverlay notificationOverlay;
 
-    private final PointManager pointManager;
+    private final ScoreManager scoreManager;
 
     private final BooleanProperty paused = new SimpleBooleanProperty();
 
     public GameController() {
         this.board = new Board();
         this.soundManager = new SoundManager(this);
-        this.pointManager = new PointManager(this);
+        this.scoreManager = new ScoreManager(this);
 
         notificationOverlay = new NotificationOverlay(this);
         paused.addListener(new ChangeListener<Boolean>() {
@@ -44,7 +68,7 @@ final class GameController {
 
     public void start() {
         board.start();
-        pointManager.pointsProperty().set(0);
+        scoreManager.scoreProperty().set(0);
         paused.set(false);
     }
 
@@ -54,7 +78,7 @@ final class GameController {
 
     public void stop() {
         board.clear();
-        pointManager.scoreProperty().set(0);
+        scoreManager.scoreProperty().set(0);
         paused.set(false);
     }
 
@@ -75,7 +99,7 @@ final class GameController {
         return notificationOverlay;
     }
 
-    public PointManager getPointManager() {
-        return pointManager;
+    public ScoreManager getScoreManager() {
+        return scoreManager;
     }
 }
