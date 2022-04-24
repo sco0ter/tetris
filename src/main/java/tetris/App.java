@@ -35,10 +35,6 @@ import java.util.concurrent.TimeUnit;
 
 public final class App extends Application {
 
-    public static void main(String[] args) {
-        launch(args);
-    }
-
     @Override
     public void start(Stage primaryStage) throws Exception {
 
@@ -50,5 +46,12 @@ public final class App extends Application {
 
         primaryStage.setScene(scene);
         primaryStage.show();
+    }
+
+    public static final class Launcher {
+
+        public static void main(String[] args) {
+            launch(App.class, args);
+        }
     }
 }
